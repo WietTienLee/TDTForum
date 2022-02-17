@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Admin System</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css"
+        integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.ckeditor.com/4.16.0/standard/ckeditor.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="row">
+        <div class="box-header">
+            <div class="dropdown text-right py-2">
+                <span>Xin chào</span><a class="dropdown-toggle text-primary" data-toggle="dropdown" id="name-login" ><span></i>&nbsp;&nbsp;Admin</span></a>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="/logout">
+                        <i class="fas fa-sign-out-alt"></i>&nbsp;&nbsp; Đăng xuất</a>
+                </div>
+            </div>
+        </div>
+        <input type="checkbox" id="check">
+        <label for="check" class="btn_nav">
+            <i class="fa fa-bars" id="btn_open"></i>
+            <i class="fa fa-bars" id="btn_close"></i>
+        </label>
+        <div class="col-lg-3 sidebarright">
+            <div class="sidebar">
+                <h3>ADMIN HOME</h3>
+                <ul>
+                    <li><a href=""><i class="fas fa-home"></i>&nbsp;&nbsp; Trang chủ</a></li>
+                    <li><a href=""><i class="far fa-id-card"></i>&nbsp;&nbsp; Tài khoản</a></li>
+                    <li ><a href="/admin/create_account"><i class="fas fa-user"></i>&nbsp;&nbsp; Tạo tài khoản Phòng/Khoa</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-lg-9">
+                
+                    
+                <div class="box">
+                    
+                    <div class="faculty">
+                        <h6><i><u>KHOA ĐÃ TẠO: <%=khoa.length%></u></i></h6>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>TÊN KHOA</th>
+                                    <th>EMAIL</th>
+                                    <th>CHỦ ĐỀ ĐĂNG</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tfaculty">
+                                <% khoa.forEach((p,index)=>{%>
+                                    <tr id="<%=p._id%>">
+                                        <td><%=(index+1)%></td>
+                                        <td><%=p.name%></td>
+                                        <td><%=p.email%></td>
+                                        <td><%=p.permission%></td>
+                                        <td>
+                                            <button data-id="<%=p._id%>" type="button" class="btn-editFA btn btn-primary">Chỉnh sửa</button> |
+                                            <button data-id="<%=p._id%>" type="button"   class="btn-deleteFA btn btn-danger">Xoá</button>
+                                        </td>
+                                    </tr>
+                                <%})%>
+                            </tbody>
+                        </table>
+                        
+                    </div>
+                    
+                   
+                    <div class="student">
+                        <h6><i><u>STUDENT ĐÃ ĐĂNG KÝ: <%=students.length%></u></i></h6>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>TÊN HỌC SINH</th>
+                                    <th>EMAIL</th>
+                                    <th>LỚP</th>
+                                    <th>KHOA</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tStudent">
+                                <% students.forEach((s,index)=>{%>
+                                    <tr id="<%=s._id%>">
+                                        <td><%=(index+1)%></td>
+                                        <td><%=s.name%></td>
+                                        <td><%=s.email%></td>
+                                        <td><%=s.class%></td>
+                                        <td><%=s.faculty%></td>
+                                        <td>
+                                            <a role="button" data-id="<%=s._id%>" class="btn-editSA">Chỉnh sửa</a> |
+                                            <a role="button" data-id="<%=s._id%>" data-name="<%=s.name%>" class="btn-deleteSA">Xóa</a>
+                                        </td>
+                                    </tr>
+                                <%})%>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="confirm-editFA-dialog" class="modal fade">
+            <div class="modal-dialog ">
+              <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                  <h4 class="modal-title">SỬA THÔNG TIN KHOA</h4>
+                  <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <form action="POST">
+                            <!-- Modal body -->
+                <div  class="modal-body">
+                    <div class="form-group">
+                        <label for="name">TÊN KHOA</label>
+                        <input value="" class="form-control" type="text" placeholder="Nhập tên khoa" id="nameFA" name="nameFA">
+                    </div>
+                    <div class="form-group">
+                        <label for="context">EMAIL</label>
+                        <input name="email" id="emailFA" class="form-control"  type="text" placeholder="Nhập email khoa">
+                    </div>
+                    <div class="form-group">
+                        <div>
+                          <label for="permission">Quyền</label>
+                        </div>
+                        <input type="checkbox" id="CTHSSV" name="FAC" value="CTHSSV">
+                        <label class="quyen" for="CTHSSV">Phòng Công tác học sinh, sinh viên </label>
+                        <input type="checkbox" id="PDH" name="FAC" value="PDH">
+                        <label class="quyen" for="PDH">Phòng Đại học</label><br>
+                        <input type="checkbox" id="PSDH" name="FAC" value="PSDH">
+                        <label class="quyen" for="PSDH">Phòng Sau Đại học </label>
+                        <input type="checkbox" id="PDTVMT" name="FAC" value="PDTVMT">
+                        <label class="quyen" for="PDTVMT">Phòng điện toán và máy tính</label><br>
+                        <input type="checkbox" id="PKTVKDCL" name="FAC" value="PKTVKDCL">
+                        <label class="quyen" for="PKTVKDCL">Phòng khảo thí và kiểm định chất lượng</label><br>
+                        <input type="checkbox" id="PTC" name="FAC" value="PTC">
+                        <label class="quyen" for="PTC">Phòng tài chính</label>
+                        <input type="checkbox" id="CLC" name="FAC" value="CLC">
+                        <label class="quyen" for="CLC">TDT Creative Language Center</label><br>
+                        <input type="checkbox" id="TTTH" name="FAC" value="TTTH">
+                        <label for="TTTH">Trung tâm tin học</label><br>
+                        <input type="checkbox" id="SDTC" name="FAC" value="SDTC">
+                        <label for="SDTC">TT đào tạo phát triển xã hội (SDTC)</label><br>
+                        <input type="checkbox" id="ATEM" name="FAC" value="ATEM">
+                        <label for="ATEM">TT phát triển KHQL và UDCN (ATEM)</label><br>
+                        <input type="checkbox" id="TTHTDNVCSV" name="FAC" value="TTHTDNVCSV">
+                        <label for="TTHTDNVCSV">TT hợp tác doanh nghiệp và cựu sinh viên</label>
+                        <input type="checkbox" id="KL" name="FAC" value="KL">
+                        <label for="KL">Khoa Luật</label>
+                        <input type="checkbox" id="TTNG" name="FAC" value="TTNG">
+                        <label for="TTNG">TT ngoại ngữ - tin học – bồi dưỡng văn hóa</label><br>
+                        <input type="checkbox" id="VCSKTVKD" name="FAC" value="VCSKTVKD">
+                        <label for="VCSKTVKD">Viện chính sách kinh tế và kinh doanh</label><br>
+                        <input type="checkbox" id="KMTCN" name="FAC" value="KMTCN">
+                        <label for="MTCN">Khoa Mỹ thuật công nghiệp</label>
+                        <input type="checkbox" id="DDT" name="FAC" value="DDT">
+                        <label for="DDT">Khoa Điện – Điện tử</label><br>
+                        <input type="checkbox" id="CNTT" name="FAC" value="CNTT">
+                        <label for="CNTT">Khoa Công nghệ thông tin</label>
+                        <input type="checkbox" id="QTKD" name="FAC" value="QTKD">
+                        <label for="QTKD">Khoa Quản trị kinh doanh</label>
+                        <input type="checkbox" id="MTVBHLD" name="FAC" value="MTVBHLD">
+                        <label for="MTVBHLD">Khoa Môi trường và bảo hộ lao động</label><br>
+                        <input type="checkbox" id="LDCD" name="FAC" value="LDCD">
+                        <label for="LDCD">Khoa Lao động công đoàn</label>
+                        <input type="checkbox" id="TCNH" name="FAC" value="TCNH">
+                        <label for="TCNH">Khoa Tài chính ngân hàng</label>
+                        <input type="checkbox" id="GDQT" name="FAC" value="GDQT">
+                        <label for="GDQT">Khoa giáo dục quốc tế</label>
+                      </div>
+                    <div style="display: none;" id="errorFA" class="alert alert-danger">
+                        Vui lòng nhập đầy đủ thông tin
+                    </div>          
+            </div>
+            <!-- Modal footer -->
+            <div class="modal-footer">
+              <button id="confirmFA" data-id="???" type="button" class="btn btn-primary">Cập nhật</button>
+              <button type="button" class="btn btn-dark" data-dismiss="modal">Đóng</button>
+            </div>
+                </form>
+              </div>
+            </div>
+        </div>
+        <div id="confirm-deleteFA-dialog" class="modal fade">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                  <h4 class="modal-title">Xóa thông báo</h4>
+                  <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <!-- Modal body -->
+                <div class="modal-body">
+                  Bạn có chắc rằng muốn xóa thông báo? 
+                </div>
+                <!-- Modal footer -->
+                <div class="modal-footer">
+                  <button id="btn-delete-confirmedFA" data-id="???" type="button" class="btn btn-danger">Xóa</button>
+                  <button type="button" class="btn btn-dark" data-dismiss="modal">Đóng</button>
+                </div>
+                
+              </div>
+            </div>
+          </div>
+        
+        <div id="confirm-editSA-dialog" class="modal fade">
+            <div class="modal-dialog ">
+              <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                  <h4 class="modal-title">SỬA THÔNG TIN SINH VIÊN</h4>
+                  <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <form action="POST">
+                            <!-- Modal body -->
+                <div  class="modal-body">
+                    <div class="form-group">
+                        <label for="name">TÊN SINH VIÊN</label>
+                        <input value="" class="form-control" type="text" placeholder="Nhập tên khoa" id="nameSA" name="nameSA">
+                    </div>
+                    <div class="form-group">
+                        <label for="class">LỚP</label>
+                        <input value="" class="form-control" type="text" placeholder="Nhập tên khoa" id="classSA" name="classSA">
+                    </div>
+                    <div class="form-group">
+                        <label for="class">KHOA</label>
+                        <input value="" class="form-control" type="text" placeholder="Nhập tên khoa" id="falcultySA" name="falcultySA">
+                    </div>
+                    <div style="display: none;" id="errorFA" class="alert alert-danger">
+                        Vui lòng nhập đầy đủ thông tin
+                    </div>          
+            </div>
+            <!-- Modal footer -->
+            <div class="modal-footer">
+              <button id="confirmSA" data-id="???" type="button" class="btn btn-primary">Cập nhật</button>
+              <button type="button" class="btn btn-dark" data-dismiss="modal">Đóng</button>
+            </div>
+                </form>
+              </div>
+            </div>
+        </div>
+        <div id="confirm-deleteSA-dialog" class="modal fade">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                  <h4 class="modal-title">Xóa thông báo</h4>
+                  <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <!-- Modal body -->
+                <div class="modal-body">
+                  Bạn có chắc rằng muốn xóa thông báo? 
+                </div>
+                <!-- Modal footer -->
+                <div class="modal-footer">
+                  <button id="btn-delete-confirmedSA" data-id="???" type="button" class="btn btn-danger">Xóa</button>
+                  <button type="button" class="btn btn-dark" data-dismiss="modal">Đóng</button>
+                </div>
+                
+              </div>
+            </div>
+          </div>
+        
+        
+        
+    </div>
+    
+    <script src="main.js">
+        // $(".block_timeline #boxPost").click(() => {
+        //     document.getElementById("formPost").innerHTML = `<form method='POST'>
+        //                 <h4>Tạo bài viết</h4>
+        //                 <input class = "input_field" type="text" placeholder="Bạn đang nghĩ gì thế?" > <br>
+        //                 <button class="btn btn-primary" type="submit">Đăng</button>
+        //             </form>`
+        // })
+    </script>
+        
+    
+</body>
+</html>
